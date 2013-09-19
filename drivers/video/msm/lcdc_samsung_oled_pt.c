@@ -20,12 +20,12 @@
 #endif
 #include "msm_fb.h"
 
-//#define DEBUG
+#define DEBUG
 /* #define SYSFS_DEBUG_CMD */
 
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA) //EJ for presto
 #define PANTECH_OLED_BL_CONTROL
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 
 #ifdef CONFIG_SPI_QUP
 #define LCDC_SAMSUNG_SPI_DEVICE_NAME	"lcdc_samsung_ams367pe02"
@@ -48,9 +48,9 @@ struct samsung_spi_data {
 	u8 len;
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA) //EJ for presto
 	u8 data[32];
-#else
+#else /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 	u8 data[22];
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 };
 
 static struct samsung_spi_data panel_sequence[] = {
@@ -72,7 +72,7 @@ static struct samsung_spi_data gamma_sequence_300[] = {
 	 0x00, 0xB0, 0x00, 0xFB } },
 	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
 };
-#else
+#else /* kkcho_temp */
 /* lum=300 cd/m2 */
 static struct samsung_spi_data gamma_sequence_300[] = {
 	{ .addr = 0xfa, .len = 22, .data = { 0x02, 0x18, 0x08, 0x24, 0x7d, 0x77,
@@ -80,7 +80,7 @@ static struct samsung_spi_data gamma_sequence_300[] = {
 	 0x00, 0xaf, 0x00, 0xe8 } },
 	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
 };
-#endif
+#endif /* kkcho_temp */
 
 static struct samsung_spi_data gamma_sequence_280[] = {
 	{ .addr = 0xfa, .len = 22, .data = { 0x02, 0x18, 0x08, 0x24, 0x3B, 0x46,
@@ -163,19 +163,6 @@ static struct samsung_spi_data gamma_sequence_80[] = {
 	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
 };
 
-static struct samsung_spi_data gamma_sequence_60[] = {
-	{ .addr = 0xfa, .len = 22, .data = { 0x02, 0x18, 0x08, 0x24, 0x48, 0x26,
-	 0x17, 0xB6, 0xBD, 0xA9, 0xB6, 0xBF, 0xAD, 0xCD, 0xD3, 0xC5, 0x00, 0x62,
-	 0x00, 0x58, 0x00, 0x85 } },
-	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
-};
-static struct samsung_spi_data gamma_sequence_40[] = {
-	{ .addr = 0xfa, .len = 22, .data = { 0x02, 0x18, 0x08, 0x24, 0x50, 0x1E,
-	 0x17, 0xB7, 0xBF, 0xAB, 0xB8, 0xC1, 0xB0, 0xCF, 0xD4, 0xC7, 0x00, 0x59,
-	 0x00, 0x4F, 0x00, 0x78 } },
-	{ .addr = 0xFA, .len = 1, .data = { 0x03 } },
-};
-
 #if (1) // kkcho_temp
 static struct samsung_spi_data etc_sequence[] = {
 	{ .addr = 0xF6, .len = 3, .data = { 0x00, 0x8e, 0x07 } },
@@ -199,14 +186,14 @@ static struct samsung_spi_data etc_sequence[] = {
 	{ .addr = 0xBA, .len = 16, .data = { 0x00, 0x00, 0x11, 0x22, 0x33, 0x44,
 	 0x44, 0x44, 0x55, 0x55, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66  } },	
 };
-#else
+#else /* kkcho_temp */
 static struct samsung_spi_data etc_sequence[] = {
 	{ .addr = 0xF6, .len = 3, .data = { 0x00, 0x8e, 0x07 } },
 	{ .addr = 0xB3, .len = 1, .data = { 0x0C } },
 };
-#endif
+#endif /* kkcho_temp */
 
-static struct samsung_state_type samsung_state = { .brightness = 180};
+static struct samsung_state_type samsung_state = { .brightness = 180 };
 static struct msm_panel_common_pdata *lcdc_samsung_pdata;
 
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)  // kkcho_temp_presto
@@ -225,7 +212,7 @@ static void lcdc_gpio_init(int enable)
 	for (n = 0; n < ARRAY_SIZE(lcdc_gpio_config); ++n)
 		gpio_tlmm_config(lcdc_gpio_config[n], 0);
 }
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 	
 #ifndef CONFIG_SPI_QUP
 static void samsung_spi_write_byte(boolean dc, u8 data)
@@ -297,7 +284,7 @@ static void samsung_spi_read_bytes(u8 cmd, u8 *data, int num)
 	udelay(2);
 	gpio_set_value(spi_cs, 1);
 }
-#endif
+#endif /*  */
 #endif
 
 #ifdef DEBUG
@@ -317,7 +304,7 @@ static const char *byte_to_binary(const u8 *buf, int len)
 
 	return b;
 }
-#endif
+#endif /*  */
 #endif
 
 #define BIT_OFFSET	(bit_size % 8)
@@ -541,8 +528,7 @@ static void samsung_disp_on_delayed_work(struct work_struct *work_ptr)
 	/* 0x29: Display On */
 	samsung_write_cmd(0x29);
 }
-
-#else
+#else /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 static void pantech_samsung_disp_on(void)
 {
 	/* 0x01: Software Reset */
@@ -565,7 +551,7 @@ static void pantech_samsung_disp_on(void)
 	/* 0x13: Normal Mode On */
 	msleep(120);	
 	samsung_write_cmd(0x13);
-#endif//EJ
+#endif
 
 #if 0//KSK
 #ifndef CONFIG_SPI_QUP
@@ -584,30 +570,29 @@ static void pantech_samsung_disp_on(void)
 		pr_info("%s: pixel-format=[%s]\n", __func__,
 			byte_to_binary(&data, 1));
 	}
-#endif
-#endif
+#endif /* CONFIG_SPI_QUP */
+#endif /*  */
 
 	msleep(120);
 	/* 0x29: Display On */
 	samsung_write_cmd(0x29);	
 }
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 
 static void samsung_disp_on(void)
 {
 	if (samsung_state.disp_powered_up && !samsung_state.display_on) {
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)  // kkcho_temp_presto	
 		pantech_samsung_disp_on();
-#else
+#else /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 		INIT_WORK(&disp_on_delayed_work, samsung_disp_on_delayed_work);
 		schedule_work(&disp_on_delayed_work);
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 		samsung_state.display_on = TRUE;
 	}
 }
 
 static int lcdc_sam_init_temp(void);
-//static int  aaaa= 0;
 static int onlyone = 0;
 static int lcdc_samsung_panel_on(struct platform_device *pdev)
 {
@@ -618,14 +603,14 @@ static int lcdc_samsung_panel_on(struct platform_device *pdev)
 	}
 #ifdef CONFIG_F_SKYDISP_BEAM_ON_BUG_FIX 		
 	if (samsung_state.display_on == false) {	
-#endif		
+#endif /* CONFIG_F_SKYDISP_BEAM_ON_BUG_FIX */
 
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)  // kej for PRESTO
 		gpio_set_value(LCD_RESET, GPIO_LOW_VALUE);
 		mdelay(6);
 		gpio_set_value(LCD_RESET, GPIO_HIGH_VALUE);
 		mdelay(12);   
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 
 	if (!samsung_state.disp_initialized) {
 #ifndef CONFIG_SPI_QUP
@@ -638,7 +623,7 @@ static int lcdc_samsung_panel_on(struct platform_device *pdev)
 		
 #ifdef CONFIG_F_SKYDISP_BEAM_ON_BUG_FIX	
 		}
-#endif
+#endif /* CONFIG_F_SKYDISP_BEAM_ON_BUG_FIX */
 	}
 	return 0;
 }
@@ -677,66 +662,58 @@ static void lcdc_samsung_oled_set_backlight(struct msm_fb_data_type *mfd)
 	}
 	
 	switch (mfd->bl_level) {
-	case 14:
+	case 12:
 		samsung_serigo_list(gamma_sequence_300,
 			sizeof(gamma_sequence_300)/sizeof(*gamma_sequence_300));
 		break;
-	case 13:
+	case 11:
 		samsung_serigo_list(gamma_sequence_280,
 			sizeof(gamma_sequence_280)/sizeof(*gamma_sequence_280));
 		break;
-	case 12:
+	case 10:
 			
 		samsung_serigo_list(gamma_sequence_260,
 			sizeof(gamma_sequence_260)/sizeof(*gamma_sequence_260));
 		break;
 
-	case 11:
+	case 9:
 		samsung_serigo_list(gamma_sequence_240,
 			sizeof(gamma_sequence_240)/sizeof(*gamma_sequence_240));
 		break;
-	case 10:
+	case 8:
 		samsung_serigo_list(gamma_sequence_220,
 			sizeof(gamma_sequence_220)/sizeof(*gamma_sequence_220));
 		break;
-	case 9:			
+	case 7:			
 		samsung_serigo_list(gamma_sequence_200,
 			sizeof(gamma_sequence_200)/sizeof(*gamma_sequence_200));
 		break;
 
-	case 8:
+	case 6:
 		samsung_serigo_list(gamma_sequence_180,
 			sizeof(gamma_sequence_180)/sizeof(*gamma_sequence_180));
 		break;
-	case 7:
+	case 5:
 		samsung_serigo_list(gamma_sequence_160,
 			sizeof(gamma_sequence_160)/sizeof(*gamma_sequence_160));
 		break;
-	case 6:		
+	case 4:		
 		samsung_serigo_list(gamma_sequence_140,
 			sizeof(gamma_sequence_140)/sizeof(*gamma_sequence_140));
 		break;		
-	case 5:
+	case 3:
 	default:
 		samsung_serigo_list(gamma_sequence_120,
 			sizeof(gamma_sequence_120)/sizeof(*gamma_sequence_120));
 		break;
-	case 4:
+	case 2:
 		samsung_serigo_list(gamma_sequence_100,
 			sizeof(gamma_sequence_100)/sizeof(*gamma_sequence_100));
 		break;
-	case 3:			
+	case 1:			
 		samsung_serigo_list(gamma_sequence_80,
 			sizeof(gamma_sequence_80)/sizeof(*gamma_sequence_80));
 		break;
-	case 2:			
-		samsung_serigo_list(gamma_sequence_60,
-			sizeof(gamma_sequence_60)/sizeof(*gamma_sequence_60));
-		break;
-	case 1:			
-		samsung_serigo_list(gamma_sequence_40,
-			sizeof(gamma_sequence_40)/sizeof(*gamma_sequence_40));
-		break;		
 
 #ifdef CONFIG_F_SKYDISP_BEAM_ON_BUG_FIX
 	case 0:
@@ -752,12 +729,10 @@ static void lcdc_samsung_oled_set_backlight(struct msm_fb_data_type *mfd)
 				msleep(50);
 		}
 		break;
-#endif
+#endif /* CONFIG_F_SKYDISP_BEAM_ON_BUG_FIX */
 	}	
 }
-#endif
-
-
+#endif /* PANTECH_OLED_BL_CONTROL */
 
 #ifdef SYSFS_DEBUG_CMD
 static ssize_t samsung_rda_cmd(struct device *dev,
@@ -795,7 +770,7 @@ static struct msm_fb_panel_data samsung_panel_data = {
 	.off = lcdc_samsung_panel_off,
 #ifdef PANTECH_OLED_BL_CONTROL
 	.set_backlight = lcdc_samsung_oled_set_backlight,
-#endif	
+#endif /* PANTECH_OLED_BL_CONTROL */
 };
 
 static int __devinit samsung_probe(struct platform_device *pdev)
@@ -822,10 +797,10 @@ static int __devinit samsung_probe(struct platform_device *pdev)
 	pinfo->fb_num = 2;
 	pinfo->clk_rate = 24000000; /* Max 27.77MHz */
 #ifdef PANTECH_OLED_BL_CONTROL	
-	pinfo->bl_max = 10; //12 -> 6  for power saving
-#else
+	pinfo->bl_max = 6; //12 -> 6  for power saving
+#else /* PANTECH_OLED_BL_CONTROL */
 	pinfo->bl_max = 15;
-#endif
+#endif /* PANTECH_OLED_BL_CONTROL */
 
 	pinfo->bl_min = 1;
 
@@ -842,14 +817,15 @@ static int __devinit samsung_probe(struct platform_device *pdev)
 	pinfo->lcdc.underflow_clr = 0xff;
 	pinfo->lcdc.hsync_skew = 0;
 	pdev->dev.platform_data = &samsung_panel_data;
-#if 0
+
+#if 0 //*  */
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)  // panel_init for PRESTO
 	lcdc_gpio_init(1);
 	pr_info("%s: lcdc_gpio_init_for_kernelMimage\n", __func__);
 	mdelay(5);
 	gpio_set_value(LCD_RESET, GPIO_HIGH_VALUE);
 	pr_info("%s: gpio_set_value_kernel_image\n", __func__);
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)  // kkcho_temp_presto
 	gpio_set_value(LCD_RESET, GPIO_LOW_VALUE);
@@ -858,14 +834,14 @@ static int __devinit samsung_probe(struct platform_device *pdev)
 	gpio_set_value(LCD_RESET, GPIO_HIGH_VALUE);
 	pr_info("%s: reset_high_for_kernelMimage\n", __func__);
 	mdelay(12);   
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 	if (!samsung_state.disp_initialized) {
 #ifndef CONFIG_SPI_QUP
 		lcdc_samsung_pdata->panel_config_gpio(1);
 		pr_info("%s:panel_config_gpio_kernelMimage\n", __func__);
 		samsung_spi_init();
 		pr_info("%s: samsung_spi_init_kernelMimage\n", __func__);
-#endif
+#endif /* CONFIG_SPI_QUP */
 		samsung_disp_powerup();
 		pr_info("%s: samsung_disp_powerup_for_kernelMimage\n", __func__);
 		samsung_disp_on();
@@ -873,7 +849,7 @@ static int __devinit samsung_probe(struct platform_device *pdev)
 	}
 	samsung_serigo_list(gamma_sequence_300,
 			sizeof(gamma_sequence_300)/sizeof(*gamma_sequence_300));
-#endif
+#endif /*  */
 
 #ifndef SYSFS_DEBUG_CMD
 	msm_fb_add_device(pdev);
@@ -916,7 +892,7 @@ static struct platform_driver this_driver = {
 	.driver.name	= "lcdc_samsung_oled",
 };
 
-#if 0
+#if 0 //*  */
 static int __init lcdc_samsung_panel_init(void)
 {
 	int ret;
@@ -924,14 +900,14 @@ static int __init lcdc_samsung_panel_init(void)
 	lcdc_gpio_init(1);
 	mdelay(5);
 	gpio_set_value(LCD_RESET, GPIO_HIGH_VALUE);
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 
 #ifdef CONFIG_FB_MSM_LCDC_AUTO_DETECT
 	if (msm_fb_detect_client("lcdc_samsung_oled")) {
 		pr_err("%s: detect failed\n", __func__);
 		return 0;
 	}
-#endif
+#endif /* CONFIG_FB_MSM_LCDC_AUTO_DETECT */
 	ret = platform_driver_register(&this_driver);
 	if (ret) {
 		pr_err("%s: driver register failed, rc=%d\n", __func__, ret);
@@ -946,12 +922,12 @@ static int __init lcdc_samsung_panel_init(void)
 		platform_driver_unregister(&this_driver);
 	} else
 		pr_info("%s: SUCCESS (SPI)\n", __func__);
-#else
+#else /* CONFIG_SPI_QUP */
 	pr_info("%s: SUCCESS (BitBang)\n", __func__);
-#endif
+#endif /* CONFIG_SPI_QUP */
 	return ret;
 }
-#else
+#else /*  */
 static int __init lcdc_samsung_panel_init(void)
 {
 	int ret;
@@ -962,7 +938,7 @@ static int __init lcdc_samsung_panel_init(void)
 	}
 	return ret;
 }
-#endif
+#endif /*  */
 
 static int lcdc_sam_init_temp(void)
 {
@@ -971,7 +947,7 @@ static int lcdc_sam_init_temp(void)
 #if defined(CONFIG_MACH_MSM8X60_PRESTO) || defined(CONFIG_MACH_MSM8X60_QUANTINA)  // kkcho_temp_presto
 	lcdc_gpio_init(1);
 	mdelay(5);
-#endif
+#endif /* CONFIG_MACH_MSM8X60_PRESTO || CONFIG_MACH_MSM8X60_QUANTINA */
 
 #ifdef CONFIG_SPI_QUP
 	ret = spi_register_driver(&lcdc_samsung_spi_driver);
@@ -985,8 +961,8 @@ static int lcdc_sam_init_temp(void)
 	pr_info("%s: SUCCESS (BitBang)\n", __func__);
 #endif
 	return ret;
-
 }
+
 module_init(lcdc_samsung_panel_init);
 static void __exit lcdc_samsung_panel_exit(void)
 {

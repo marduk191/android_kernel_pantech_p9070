@@ -144,6 +144,7 @@
 #define VEN_INPUTFMT_NV12	1/* NV12 Linear */
 #define VEN_INPUTFMT_NV21	2/* NV21 Linear */
 #define VEN_INPUTFMT_NV12_16M2KA	3/* NV12 Linear */
+#define VEN_INPUTFMT_NV21_16M2KA	4
 
 /*Different allowed rotation modes.*/
 #define VEN_ROTATION_0	1/* 0 degrees */
@@ -454,7 +455,12 @@ struct venc_ioctl_msg{
 #define VEN_IOCTL_GET_EXTRADATA \
 	_IOR(VEN_IOCTLBASE_ENC, 49, struct venc_ioctl_msg)
 
-#define VEN_IOCTL_SET_H263_PLUSPTYPE \
+/*IOCTL params:SET: InputData - NULL, OutputData - NULL.*/
+#define VEN_IOCTL_SET_SLICE_DELIVERY_MODE \
+	_IO(VEN_IOCTLBASE_ENC, 50)
+
+/*IOCTL params:SET: InputData - unsigned int, OutputData - NULL*/
+#define VEN_IOCTL_SET_SPS_PPS_FOR_IDR \
 	_IOW(VEN_IOCTLBASE_ENC, 51, struct venc_ioctl_msg)
 
 struct venc_switch{
@@ -518,11 +524,6 @@ struct venc_qprange{
 	unsigned long	maxqp;
 	unsigned long	minqp;
 };
-
-struct venc_plusptype {
-	unsigned long	plusptype_enable;
-};
-
 struct venc_intraperiod{
 	unsigned long	num_pframes;
 	unsigned long	num_bframes;

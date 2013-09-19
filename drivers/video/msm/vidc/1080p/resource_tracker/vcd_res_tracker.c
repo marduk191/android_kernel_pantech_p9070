@@ -157,7 +157,7 @@ ion_bail_out:
 
 static void res_trk_pmem_free(struct ddl_buf_addr *addr)
 {
-	/*TODO: Enhance for pmem*/
+	/* TODO Pmem*/
 	struct ddl_context *ddl_context;
 	ddl_context = ddl_get_context();
 	if (ddl_context->video_ion_client) {
@@ -203,8 +203,7 @@ static int res_trk_pmem_alloc
 				rc = -ENOMEM;
 				goto bail_out;
 			}
-		}
-		else {
+		} else {
 			addr->alloc_handle = NULL;
 			addr->alloced_phys_addr = PIL_FW_BASE_ADDR;
 			addr->buffer_size = sz;
@@ -216,6 +215,7 @@ static int res_trk_pmem_alloc
 		if (!addr->alloced_phys_addr) {
 			DDL_MSG_ERROR("%s() : acm alloc failed (%d)\n",
 					__func__, alloc_size);
+			rc = -ENOMEM;
 			goto bail_out;
 		}
 		addr->buffer_size = sz;
@@ -436,6 +436,10 @@ bail_out:
 static struct ion_client *res_trk_create_ion_client(void){
 	struct ion_client *video_client;
 	video_client = msm_ion_client_create(-1, "video_client");
+	if (IS_ERR_OR_NULL(video_client)) {
+		VCDRES_MSG_ERROR("%s: Unable to create ION client\n", __func__);
+		video_client = NULL;
+	}
 	return video_client;
 }
 
@@ -583,7 +587,6 @@ u32 res_trk_set_perf_level(u32 req_perf_lvl, u32 *pn_set_perf_lvl,
 			__func__, dev_ctxt);
 		return false;
 	}
-
 	VCDRES_MSG_LOW("%s(), req_perf_lvl = %d", __func__, req_perf_lvl);
 
 	if (!turbo_supported && req_perf_lvl > RESTRK_1080P_MAX_PERF_LEVEL) {
@@ -859,10 +862,6 @@ u32 res_trk_get_disable_dmx(void){
 	return resource_context.disable_dmx;
 }
 
-u32 res_trk_get_min_dpb_count(void){
-	return resource_context.vidc_platform_data->cont_mode_dpb_count;
-}
-
 void res_trk_set_mem_type(enum ddl_mem_area mem_type)
 {
 	resource_context.res_mem_type = mem_type;
@@ -1007,18 +1006,4 @@ u32 get_res_trk_perf_level(enum vcd_perf_level perf_level)
 		res_trk_perf_level = -EINVAL;
 	}
 	return res_trk_perf_level;
-}
-
-u32 res_trk_estimate_perf_level(u32 pn_perf_lvl)
-{
-	VCDRES_MSG_MED("%s(), req_perf_lvl = %d", __func__, pn_perf_lvl);
-	if ((pn_perf_lvl >= RESTRK_1080P_VGA_PERF_LEVEL) &&
-		(pn_perf_lvl < RESTRK_1080P_720P_PERF_LEVEL)) {
-		return RESTRK_1080P_720P_PERF_LEVEL;
-	} else if ((pn_perf_lvl >= RESTRK_1080P_720P_PERF_LEVEL) &&
-			(pn_perf_lvl < RESTRK_1080P_MAX_PERF_LEVEL)) {
-		return RESTRK_1080P_MAX_PERF_LEVEL;
-	} else {
-		return pn_perf_lvl;
-	}
 }

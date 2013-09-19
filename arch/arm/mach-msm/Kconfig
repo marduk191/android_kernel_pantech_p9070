@@ -169,6 +169,7 @@ config ARCH_MSM8960
 	select MSM_PM8X60 if PM
 	select HOLES_IN_ZONE if SPARSEMEM
 	select MSM_KRAIT_WFE_FIXUP
+	select MSM_CPU_PWRCTL
 
 config ARCH_MSM8930
 	bool "MSM8930"
@@ -207,6 +208,7 @@ config ARCH_MSM8930
 	select MSM_PM8X60 if PM
 	select HOLES_IN_ZONE if SPARSEMEM
 	select MSM_KRAIT_WFE_FIXUP
+	select MSM_CPU_PWRCTL
 
 config ARCH_APQ8064
 	bool "APQ8064"
@@ -225,6 +227,7 @@ config ARCH_APQ8064
 	select MSM_PM8X60 if PM
 	select HOLES_IN_ZONE if SPARSEMEM
 	select MSM_KRAIT_WFE_FIXUP
+	select MSM_CPU_PWRCTL
 
 config ARCH_MSMCOPPER
 	bool "MSM Copper"
@@ -1847,6 +1850,15 @@ config MSM_PM8X60
 	depends on PM
 	bool
 
+config MSM_EVENT_TIMER
+    default y
+	bool "Event timer"
+	help
+		This option enables a modules that manages a list of event timers that
+		need to be monitored by the PM. The enables the PM code to monitor
+		events that require the core to be awake and ready to handle the
+		event.
+
 config MSM_NOPM
 	default y if !PM
 	bool
@@ -2146,20 +2158,11 @@ config MSM_DCVS
 	  algorithm and the algorithm returns a frequency for the core which is
 	  passed to the frequency change driver.
 
-config MSM_CACHE_DUMP
-	bool "Cache dumping support"
+config MSM_CPU_PWRCTL
+	bool "Ensures that krait droop detectors are always off"
 	help
-	  Add infrastructure to dump the L1 and L2 caches to an allocated buffer.
-	  This allows for analysis of the caches in case cache corruption is
-	  suspected.
-
-config MSM_CACHE_DUMP_ON_PANIC
-	bool "Dump caches on panic"
-	depends on MSM_CACHE_DUMP
-	help
-	  By default, the caches are flushed on panic. This means that trying to
-	  look at them in a RAM dump will give useless data. Select this if you
-	  want to dump the L1 and L2 caches on panic before any flush occurs.
-	  If unsure, say N
+	  Droop detector mechanism can adversely affect krait plls during
+	  stand alone power collapse operation. Selecting this option
+	  ensures that they are always off.
 
 endif
