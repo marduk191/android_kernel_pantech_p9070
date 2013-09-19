@@ -2,7 +2,7 @@
  * include/linux/ion.h
  *
  * Copyright (C) 2011 Google, Inc.
- * Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -52,6 +52,14 @@ enum ion_heap_type {
 #define ION_HEAP_CARVEOUT_MASK		(1 << ION_HEAP_TYPE_CARVEOUT)
 #define ION_HEAP_CP_MASK		(1 << ION_HEAP_TYPE_CP)
 
+/**
+ * heap flags - the lower 16 bits are used by core ion, the upper 16
+ * bits are reserved for use by the heaps themselves.
+ */
+#define ION_FLAG_CACHED 1		/* mappings of this buffer should be
+					   cached, ion will do cache
+					   maintenance when the buffer is
+					   mapped for dma */
 
 /**
  * These are the only ids that should be used for Ion heap ids.
@@ -840,5 +848,14 @@ struct ion_flag_data {
  * secure state etc.
  */
 #define ION_IOC_GET_FLAGS		_IOWR(ION_IOC_MAGIC, 10, \
+						struct ion_flag_data)
+
+
+/**
+ * DOC: ION_IOC_SYNC - BOGUS
+ *
+ * NOT SUPPORTED
+ */
+#define ION_IOC_SYNC		_IOWR(ION_IOC_MAGIC, 42, \
 						struct ion_flag_data)
 #endif /* _LINUX_ION_H */

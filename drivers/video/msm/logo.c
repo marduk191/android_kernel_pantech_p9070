@@ -26,7 +26,7 @@
 
 #if defined(CONFIG_SKY_CHARGING) || defined(CONFIG_SKY_SMB_CHARGER)
 #include "msm_fb.h"
-#endif
+#endif /* CONFIG_SKY_CHARGING || CONFIG_SKY_SMB_CHARGER */
 
 #define fb_width(fb)	((fb)->var.xres)
 #define fb_height(fb)	((fb)->var.yres)
@@ -37,21 +37,21 @@ typedef unsigned int IBUF_TYPE;
 #if 0
 static void memset24(void *_ptr, unsigned short val, unsigned count)
 {
-    unsigned char *ptr = _ptr;
-    unsigned char r, g, b;
+	unsigned char *ptr = _ptr;
+	unsigned char r, g, b;
 
-    r = (unsigned char)((val & 0xf800) >> 8);
-    g = (unsigned char)((val & 0x07e0) >> 3);
-    b = (unsigned char)((val & 0x001f) << 3);
+	r = (unsigned char)((val & 0xf800) >> 8);
+	g = (unsigned char)((val & 0x07e0) >> 3);
+	b = (unsigned char)((val & 0x001f) << 3);
 
-    count >>= 1;
-    while (count--)
-    {
-        *ptr++ = b;
-        *ptr++ = g;
-        *ptr++ = r;
-        *ptr++ = 0; // 32bpp
-    }
+	count >>= 1;
+	while (count--)
+	{
+		*ptr++ = b;
+		*ptr++ = g;
+		*ptr++ = r;
+		*ptr++ = 0; // 32bpp
+	}
 }
 #else
 static void memset32(void *_ptr, unsigned int val, unsigned count)
@@ -63,7 +63,7 @@ static void memset32(void *_ptr, unsigned int val, unsigned count)
 }
 #endif
 
-#else
+#else /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 typedef unsigned short IBUF_TYPE;
 
 static void memset16(void *_ptr, unsigned short val, unsigned count)
@@ -73,7 +73,7 @@ static void memset16(void *_ptr, unsigned short val, unsigned count)
 	while (count--)
 		*ptr++ = val;
 }
-#endif  // CONFIG_F_SKYDISP_FRAMEBUFFER_32
+#endif /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 
 /* 565RLE image format: [count(2 bytes), rle(2 bytes)] */
 int load_565rle_image(char *filename, bool bf_supported)
@@ -82,10 +82,10 @@ int load_565rle_image(char *filename, bool bf_supported)
 	int fd, count, err = 0;
 	unsigned max;
 #ifdef CONFIG_F_SKYDISP_FRAMEBUFFER_32
-    IBUF_TYPE *data, *bits, *ptr;
-#else
+	IBUF_TYPE *data, *bits, *ptr;
+#else /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 	unsigned short *data, *bits, *ptr;
-#endif
+#endif /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 
 	info = registered_fb[0];
 	if (!info) {
@@ -127,31 +127,31 @@ int load_565rle_image(char *filename, bool bf_supported)
 	}
 #ifdef CONFIG_F_SKYDISP_FRAMEBUFFER_32
 	bits = (IBUF_TYPE *)(info->screen_base);
-#else
+#else /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 	bits = (unsigned short *)(info->screen_base);
-#endif
+#endif /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 #ifdef CONFIG_F_SKYDISP_FRAMEBUFFER_32
 	while (count > 7)
-#else
+#else /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 	while (count > 3)
-#endif
+#endif /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 	{
 		unsigned n = ptr[0];
 		if (n > max)
 			break;
 #ifdef CONFIG_F_SKYDISP_FRAMEBUFFER_32
 		memset32((unsigned int *)bits, ptr[1], n << 2);
-#else
+#else /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 		memset16(bits, ptr[1], n << 1);
-#endif
+#endif /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 		bits += n;
 		max -= n;
 		ptr += 2;
 #ifdef CONFIG_F_SKYDISP_FRAMEBUFFER_32
 		count -= 8;
-#else
+#else /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 		count -= 4;
-#endif
+#endif /* CONFIG_F_SKYDISP_FRAMEBUFFER_32 */
 	}
 
 err_logo_free_data:
@@ -216,12 +216,12 @@ err_logo_close_file:
 	return err;
 }
 EXPORT_SYMBOL(load_raw_image);
-#endif
+#endif /* CONFIG_SW_RESET */
 
 #if defined(CONFIG_SKY_CHARGING) || defined(CONFIG_SKY_SMB_CHARGER)
 #ifdef CONFIG_FB_MSM_MIPI_DSI
 void mdp4_dsi_video_overlay(struct msm_fb_data_type *mfd);
-#endif
+#endif /* CONFIG_FB_MSM_MIPI_DSI */
 int display_low_battery_image(void)
 {
 	struct fb_info *info;
@@ -279,7 +279,7 @@ int display_low_battery_image(void)
 	info->var.yoffset = info->var.yres;
 #ifdef CONFIG_FB_MSM_MIPI_DSI
 	mdp4_dsi_video_overlay((struct msm_fb_data_type *)info->par);
-#endif
+#endif /* CONFIG_FB_MSM_MIPI_DSI */
 
 err_logo_free_data:
 	kfree(data);
@@ -288,4 +288,4 @@ err_logo_close_file:
 	return err;
 }
 EXPORT_SYMBOL(display_low_battery_image);
-#endif
+#endif /* CONFIG_SKY_CHARGING || CONFIG_SKY_SMB_CHARGER */

@@ -57,7 +57,11 @@ static unsigned int poolsize_hdlc = 8;  /*Number of items in the mempool */
 static unsigned int itemsize_write_struct = 20; /*Size of item in the mempool */
 static unsigned int poolsize_write_struct = 8; /* Num of items in the mempool */
 /* This is the max number of user-space clients supported at initialization*/
+#ifdef CONFIG_PANTECH_SKY
+static unsigned int max_clients = 17;
+#else /* CONFIG_PANTECH_SKY */
 static unsigned int max_clients = 15;
+#endif /* CONFIG_PANTECH_SKY */
 static unsigned int threshold_client_limit = 30;
 /* This is the maximum number of pkt registrations supported at initialization*/
 unsigned int diag_max_reg = 600;
@@ -269,8 +273,7 @@ void diag_clear_reg(int proc_num)
 }
 
 void diag_add_reg(int j, struct bindpkt_params *params,
-					  int *success,
-					  unsigned int *count_entries)
+				  int *success, unsigned int *count_entries)
 {
 	*success = 1;
 	driver->table[j].cmd_code = params->cmd_code;

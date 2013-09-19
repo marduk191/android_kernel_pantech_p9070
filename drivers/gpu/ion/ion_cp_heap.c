@@ -2,7 +2,7 @@
  * drivers/gpu/ion/ion_cp_heap.c
  *
  * Copyright (C) 2011 Google, Inc.
- * Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -93,6 +93,7 @@ struct ion_cp_heap {
 	int iommu_map_all;
 	int iommu_2x_map_domain;
 	unsigned int has_outer_cache;
+	atomic_t protect_cnt;
 };
 
 enum {
@@ -127,7 +128,7 @@ static int ion_cp_protect(struct ion_heap *heap)
 		container_of(heap, struct ion_cp_heap, heap);
 	int ret_value = 0;
 
-	if (cp_heap->heap_protected == HEAP_NOT_PROTECTED) {
+	if (atomic_inc_return(&cp_heap->protect_cnt) == 1) {
 		/* Make sure we are in C state when the heap is protected. */
 		if (cp_heap->reusable && !cp_heap->allocated_bytes) {
 			ret_value = fmem_set_state(FMEM_C_STATE);
@@ -146,6 +147,7 @@ static int ion_cp_protect(struct ion_heap *heap)
 					pr_err("%s: unable to transition heap to T-state\n",
 						__func__);
 			}
+			atomic_dec(&cp_heap->protect_cnt);
 		} else {
 			cp_heap->heap_protected = HEAP_PROTECTED;
 			pr_debug("Protected heap %s @ 0x%lx\n",
@@ -153,6 +155,9 @@ static int ion_cp_protect(struct ion_heap *heap)
 		}
 	}
 out:
+	pr_debug("%s: protect count is %d\n", __func__,
+		atomic_read(&cp_heap->protect_cnt));
+	BUG_ON(atomic_read(&cp_heap->protect_cnt) < 0);
 	return ret_value;
 }
 
@@ -166,7 +171,7 @@ static void ion_cp_unprotect(struct ion_heap *heap)
 	struct ion_cp_heap *cp_heap =
 		container_of(heap, struct ion_cp_heap, heap);
 
-	if (cp_heap->heap_protected == HEAP_PROTECTED) {
+	if (atomic_dec_and_test(&cp_heap->protect_cnt)) {
 		int error_code = ion_cp_unprotect_mem(
 			cp_heap->secure_base, cp_heap->secure_size,
 			cp_heap->permission_type);
@@ -185,6 +190,9 @@ static void ion_cp_unprotect(struct ion_heap *heap)
 			}
 		}
 	}
+	pr_debug("%s: protect count is %d\n", __func__,
+		atomic_read(&cp_heap->protect_cnt));
+	BUG_ON(atomic_read(&cp_heap->protect_cnt) < 0);
 }
 
 ion_phys_addr_t ion_cp_allocate(struct ion_heap *heap,
@@ -571,7 +579,8 @@ int ion_cp_cache_ops(struct ion_heap *heap, struct ion_buffer *buffer,
 	return 0;
 }
 
-static int ion_cp_print_debug(struct ion_heap *heap, struct seq_file *s)
+static int ion_cp_print_debug(struct ion_heap *heap, struct seq_file *s,
+			      const struct rb_root *mem_map)
 {
 	unsigned long total_alloc;
 	unsigned long total_size;
@@ -595,6 +604,45 @@ static int ion_cp_print_debug(struct ion_heap *heap, struct seq_file *s)
 	seq_printf(s, "kmapping count: %lx\n", kmap_count);
 	seq_printf(s, "heap protected: %s\n", heap_protected ? "Yes" : "No");
 	seq_printf(s, "reusable: %s\n", cp_heap->reusable  ? "Yes" : "No");
+
+	if (mem_map) {
+		unsigned long base = cp_heap->base;
+		unsigned long size = cp_heap->total_size;
+		unsigned long end = base+size;
+		unsigned long last_end = base;
+		struct rb_node *n;
+
+		seq_printf(s, "\nMemory Map\n");
+		seq_printf(s, "%16.s %14.s %14.s %14.s\n",
+			   "client", "start address", "end address",
+			   "size (hex)");
+
+		for (n = rb_first(mem_map); n; n = rb_next(n)) {
+			struct mem_map_data *data =
+					rb_entry(n, struct mem_map_data, node);
+			const char *client_name = "(null)";
+
+			if (last_end < data->addr) {
+				seq_printf(s, "%16.s %14lx %14lx %14lu (%lx)\n",
+					   "FREE", last_end, data->addr-1,
+					   data->addr-last_end,
+					   data->addr-last_end);
+			}
+
+			if (data->client_name)
+				client_name = data->client_name;
+
+			seq_printf(s, "%16.s %14lx %14lx %14lu (%lx)\n",
+				   client_name, data->addr,
+				   data->addr_end,
+				   data->size, data->size);
+			last_end = data->addr_end+1;
+		}
+		if (last_end < end) {
+			seq_printf(s, "%16.s %14lx %14lx %14lu (%lx)\n", "FREE",
+				last_end, end-1, end-last_end, end-last_end);
+		}
+	}
 
 	return 0;
 }
@@ -883,6 +931,7 @@ struct ion_heap *ion_cp_heap_create(struct ion_platform_heap *heap_data)
 	cp_heap->secure_base = cp_heap->base;
 	cp_heap->secure_size = heap_data->size;
 	cp_heap->has_outer_cache = heap_data->has_outer_cache;
+	atomic_set(&cp_heap->protect_cnt, 0);
 	if (heap_data->extra_data) {
 		struct ion_cp_heap_pdata *extra_data =
 				heap_data->extra_data;
@@ -927,6 +976,14 @@ void ion_cp_heap_destroy(struct ion_heap *heap)
 	cp_heap = NULL;
 }
 
+void ion_cp_heap_get_base(struct ion_heap *heap, unsigned long *base,
+		unsigned long *size) \
+{
+	struct ion_cp_heap *cp_heap =
+	     container_of(heap, struct  ion_cp_heap, heap);
+	*base = cp_heap->base;
+	*size = cp_heap->total_size;
+}
 
 /*  SCM related code for locking down memory for content protection */
 
