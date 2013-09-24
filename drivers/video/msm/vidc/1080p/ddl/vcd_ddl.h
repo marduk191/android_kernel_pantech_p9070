@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -226,6 +226,7 @@ struct ddl_batch_frame_data {
 			[DDL_MAX_NUM_BFRS_FOR_SLICE_BATCH];
 	u32 num_output_frames;
 	u32 out_frm_next_frmindex;
+	u32  first_output_frame_tag;
 };
 struct ddl_encoder_data{
 	struct ddl_codec_data_hdr   hdr;

@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2012, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -45,7 +45,7 @@
 #define VIDC_SM_DISP_PIC_PROFILE_DISP_PIC_PROFILE_SHFT      0
 
 #define VIDC_SM_DISP_PIC_FRAME_TYPE_ADDR                    0x00c0
-#define VIDC_SM_DISP_PIC_FRAME_TYPE_BMSK                    0x0000003f
+#define VIDC_SM_DISP_PIC_FRAME_TYPE_BMSK                    0x00000003
 #define VIDC_SM_DISP_PIC_FRAME_TYPE_SHFT                    0
 
 #define VIDC_SM_FREE_LUMA_DPB_ADDR                          0x00c4
@@ -208,7 +208,7 @@
 #define VIDC_SM_MPEG4_ASPECT_RATIO_INFO_SHFT         0x0
 #define VIDC_SM_EXTENDED_PAR_ADDR                    0x00cc
 #define VIDC_SM_EXTENDED_PAR_WIDTH_BMSK              0xffff0000
-#define VIDC_SM_EXTENDED_PAR_WIDTH_SHFT              0xf
+#define VIDC_SM_EXTENDED_PAR_WIDTH_SHFT              16
 #define VIDC_SM_EXTENDED_PAR_HEIGHT_BMSK             0x0000ffff
 #define VIDC_SM_EXTENDED_PAR_HEIGHT_SHFT             0x0
 
