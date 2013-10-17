@@ -288,53 +288,6 @@ struct msmfb_writeback_data {
 	struct msmfb_img img;
 };
 
-#define MDP_PP_OPS_ENABLE 0x1
-#define MDP_PP_OPS_READ 0x2
-#define MDP_PP_OPS_WRITE 0x4
-#define MDP_PP_OPS_DISABLE 0x8
-
-struct mdp_qseed_cfg {
-	uint32_t table_num;
-	uint32_t ops;
-	uint32_t len;
-	uint32_t *data;
-};
-
-struct mdp_qseed_cfg_data {
-	uint32_t block;
-	struct mdp_qseed_cfg qseed_data;
-};
-
-struct mdp_sharp_cfg {
-	uint32_t flags;
-	uint32_t strength;
-	uint32_t edge_thr;
-	uint32_t smooth_thr;
-	uint32_t noise_thr;
-};
-
-#define MDP_OVERLAY_PP_CSC_CFG      0x1
-#define MDP_OVERLAY_PP_QSEED_CFG    0x2
-#define MDP_OVERLAY_PP_PA_CFG    0x4
-#define MDP_OVERLAY_PP_IGC_CFG    0x8
-#define MDP_OVERLAY_PP_SHARP_CFG    0x10
-
-#define MDP_CSC_FLAG_ENABLE	0x1
-#define MDP_CSC_FLAG_YUV_IN	0x2
-#define MDP_CSC_FLAG_YUV_OUT	0x4
-
-
-
-struct mdp_pa_cfg {
-	uint32_t flags;
-	uint32_t hue_adj;
-	uint32_t sat_adj;
-	uint32_t val_adj;
-	uint32_t cont_adj;
-};
-
-
-
 struct dpp_ctrl {
 	/*
 	 *'sharp_strength' has inputs = -128 <-> 127
@@ -523,10 +476,10 @@ struct mdp_bl_scale_data {
 	uint32_t scale;
 };
 
-struct mdp_pa_cfg_data {
-	uint32_t block;
-	struct mdp_pa_cfg pa_data;
-};
+//struct mdp_pa_cfg_data {
+//	uint32_t block;
+//	struct mdp_pa_cfg pa_data;
+//};
 
 enum {
 	mdp_op_pcc_cfg,
