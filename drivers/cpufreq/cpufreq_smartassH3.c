@@ -19,6 +19,8 @@
  *
  * SMP support based on mod by faux123
  *
+ * ZTE Skate specific tweaks by H3ROS @ MoDaCo, integrated by C3C0 @ MoDaCo
+ *
  * For a general overview of smartassV2 see the relavent part in
  * Documentation/cpu-freq/governors.txt
  *
@@ -52,8 +54,7 @@ static unsigned int awake_ideal_freq;
  * that practically when sleep_ideal_freq==0 the awake_ideal_freq is used
  * also when suspended).
  */
-
-#define DEFAULT_SLEEP_IDEAL_FREQ 249600
+#define DEFAULT_SLEEP_IDEAL_FREQ 122880
 static unsigned int sleep_ideal_freq;
 
 /*
@@ -975,6 +976,5 @@ module_exit(cpufreq_smartass_exit);
 MODULE_AUTHOR ("Erasmux, moded by H3ROS & C3C0");
 MODULE_DESCRIPTION ("'cpufreq_smartassH3' - A smart cpufreq governor");
 MODULE_LICENSE ("GPL");
-
 
 
